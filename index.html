@@ -69,7 +69,7 @@
 <body class="bg-gray-100 text-gray-800">
 
     <!-- Build Number -->
-    <div class="fixed bottom-2 left-2 text-xs text-gray-400 font-mono z-50 pointer-events-none select-none mix-blend-difference">v3.2.0</div>
+    <div class="fixed bottom-2 left-2 text-xs text-gray-400 font-mono z-50 pointer-events-none select-none mix-blend-difference">v3.2.1</div>
 
     <!-- 1. Master Selection Screen -->
     <div id="master-selection-screen" class="flex flex-col items-center justify-center min-h-screen p-6 bg-gray-50">
@@ -448,6 +448,9 @@
             },
             getRandomETA: function(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; },
             ensureAudioContext: function() { if (!this.audioCtx) { try { this.audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { console.error("Audio Context not supported"); return false; } } if (this.audioCtx.state === 'suspended') this.audioCtx.resume(); return this.audioCtx.state === 'running'; },
+            playTypingSound: function(duration) {
+                // Removed Background Typing
+            },
             playSound: function(type, callback) { 
                 let duration = 0; if (type === 'dial') duration = 1500; if (type === 'ring') duration = 3000; 
                 if (!this.ensureAudioContext()) { if (callback) setTimeout(callback, duration); return; } 
@@ -585,6 +588,7 @@
                 this.showTypingIndicator(); 
                 // Increased delay for "Thinking" feeling (1.5s - 2.5s)
                 const delay = 1500 + Math.random() * 1000; 
+                // this.playTypingSound(delay); // REMOVED
                 this.operatorTypingTimeout = setTimeout(() => { 
                     if (node.operator) {
                         let text = node.operator;
