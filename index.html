@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#1f2937">
+    <meta name="theme-color" content="#1a202c">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -27,7 +27,7 @@
         /* --- Scenario App Styles --- */
         .fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .chat-bubble { max-width: 80%; word-wrap: break-word; }
+        .chat-bubble { max-width: 85%; word-wrap: break-word; }
         .chat-bubble-casualty { background-color: #e5e7eb; color: #1f2937; }
         .chat-bubble-aider { background-color: #3b82f6; color: white; }
         .scenario-pulse { animation: scenarioPulse 1.5s infinite; }
@@ -36,52 +36,40 @@
         .avpu-button.active { background-color: #1d4ed8; color: white; }
 
         /* --- Operator App Styles --- */
-        .phone-frame {
-            border: 14px solid #1f2937; /* Dark bezel */
-            border-radius: 2.5rem; /* Rounded phone corners */
-            overflow: hidden;
-            position: relative;
-            background-color: #ffffff; /* Default screen bg */
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), inset 0 0 0 2px #000;
+        .borderless-container {
+            height: 100vh; width: 100%; display: flex; flex-direction: column;
+            background: linear-gradient(180deg, #1a202c 0%, #2d3748 100%);
+            color: white; position: fixed; top: 0; left: 0; z-index: 50;
         }
-        .phone-notch {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40%;
-            height: 24px;
-            background-color: #1f2937;
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
-            z-index: 20;
-        }
-        .in-call-bg { background: linear-gradient(180deg, #1a202c 0%, #2d3748 100%); color: white; }
         .glass-panel { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 1rem; border: 1px solid rgba(255, 255, 255, 0.1); }
         @keyframes operatorPulse { 0%, 100% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.1); opacity: 1; } }
         .mic-listening { animation: operatorPulse 1.5s infinite; color: #ef4444; }
-        .typing-indicator span { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #9ca3af; animation: typing-bounce 1.2s infinite ease-in-out; }
-        .in-call-bg .typing-indicator span { background-color: #e2e8f0; }
+        .typing-indicator span { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #e2e8f0; animation: typing-bounce 1.2s infinite ease-in-out; }
         .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
         .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
         @keyframes typing-bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
         .selection-button { color: white; font-weight: bold; padding: 1.5rem; border-radius: 1rem; transition: all 0.2s; width: 100%; max-width: 400px; text-align: center; transform: scale(1); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .selection-button:hover { transform: scale(1.02); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
         
-        /* Transcript Modal */
-        #transcript-modal { background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
-        .transcript-row { border-bottom: 1px solid #e5e7eb; padding: 8px 0; font-size: 14px; }
+        /* Transcript & Override Modals */
+        .modal-overlay { background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
+        .transcript-row { border-bottom: 1px solid #e5e7eb; padding: 12px 0; font-size: 15px; }
         .transcript-row:last-child { border-bottom: none; }
-        .t-sender { font-weight: bold; width: 80px; flex-shrink: 0; }
+        .t-sender { font-weight: bold; width: 90px; flex-shrink: 0; }
         .t-operator { color: #2563eb; }
         .t-user { color: #16a34a; }
         .t-system { color: #ca8a04; font-style: italic; }
+        
+        /* Override Grid */
+        .override-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .override-btn { background: #374151; padding: 15px; border-radius: 8px; font-weight: bold; text-align: center; transition: background 0.2s; }
+        .override-btn:hover { background: #4b5563; }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
 
     <!-- Build Number -->
-    <div class="fixed bottom-2 left-2 text-xs text-gray-400 font-mono z-50 pointer-events-none">v3.1.1</div>
+    <div class="fixed bottom-2 left-2 text-xs text-gray-400 font-mono z-50 pointer-events-none select-none mix-blend-difference">v3.2.0</div>
 
     <!-- 1. Master Selection Screen -->
     <div id="master-selection-screen" class="flex flex-col items-center justify-center min-h-screen p-6 bg-gray-50">
@@ -110,98 +98,132 @@
         </div>
     </div>
 
-    <!-- 3. Operator App Container -->
-    <div id="operator-app-wrapper" class="hidden flex flex-col items-center justify-center min-h-screen p-4">
-        <!-- Control Bar Outside Phone -->
-        <div class="w-full max-w-sm mx-auto mb-4 px-4 py-3 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center justify-between">
-            <span class="text-sm font-semibold text-gray-600">Call Speed</span>
-            <div class="flex items-center space-x-3 w-1/2">
-                <span class="text-xs text-gray-400">Slow</span>
-                <input type="range" id="speed-slider" min="0.5" max="1.5" value="1.0" step="0.05" class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
-                <span class="text-xs text-gray-400">Fast</span>
-            </div>
-        </div>
+    <!-- 3. Operator App Container (Borderless) -->
+    <div id="operator-app-wrapper" class="hidden borderless-container">
         
-        <!-- Phone Frame -->
-        <div class="w-full max-w-sm mx-auto phone-frame flex flex-col" style="height: 80vh; max-height: 720px;">
-            <div class="phone-notch"></div>
-            <div class="flex justify-between items-center text-xs font-medium px-6 pt-3 pb-2 z-30 relative text-gray-800" id="status-bar">
+        <!-- Header / Top Bar -->
+        <div class="flex-shrink-0 w-full px-4 pt-safe-top pb-2 bg-gray-900/50 backdrop-blur-md z-30">
+            <div class="flex justify-between items-center text-xs font-medium text-gray-300 mb-3 px-1 pt-2">
                 <span id="currentTime">12:00</span>
                 <div class="flex items-center space-x-1.5">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M15.384 6.115a.485.485 0 0 0-.047-.736C12.522 3.251 8.82 2 5.12 2S-2.282 3.252.123 5.379a.485.485 0 0 0-.048.736.518.518 0 0 0 .732.05c2.72-2.312 6.1-3.14 9.4-2.43a.518.518 0 0 0 .517-.05c2.72-2.312 6.1-3.14 9.4-2.43a.518.518 0 0 0 .732.05L15.384 6.115zM12.02 8.83a.485.485 0 0 0-.047-.736C10.048 6.51 7.208 6 4.368 6c-2.84 0-5.68.51-7.652 2.094a.485.485 0 0 0-.048.736.518.518 0 0 0 .732.05c2-1.7 4.56-2.4 7.04-1.76a.518.518 0 0 0 .517-.05c2-1.7 4.56-2.4 7.04-1.76a.518.518 0 0 0 .732.05L12.02 8.83z"/><path d="M9.898 11.545a.485.485 0 0 0-.047-.736C8.86 10.01 7.208 9.5 5.568 9.5c-1.64 0-3.292.51-4.28 1.31a.485.485 0 0 0-.048.736.518.518 0 0 0 .732.05c.9-.75 2.24-1.21 3.6-1.02a.518.518 0 0 0 .517-.05c.9-.75 2.24-1.21 3.6-1.02a.518.518 0 0 0 .732.05zM7.768 14.26a.485.485 0 0 0-.047-.736C7.246 13.01 6.448 12.5 5.648 12.5c-.8 0-1.6.51-2.072 1.024a.485.485 0 0 0-.048.736.518.518 0 0 0 .732.05c.4-.333.92-.524 1.39-.524s.99.191 1.39.524a.518.518 0 0 0 .732.05z"/></svg>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M2 6h10v4H2V6z"/><path d="M2 4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H2zm13 1a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-1v-4h1z"/></svg>
                 </div>
             </div>
-            <div id="callScreen" class="flex-grow flex flex-col justify-between text-center p-4 mt-2 relative z-10">
-                <div id="support-banner" class="hidden flex-shrink-0 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-2 mb-2 rounded-md">Voice Not Supported</div>
-                
-                <!-- Dialing Screen -->
-                <div id="dialing-screen" class="flex flex-col items-center justify-center h-full pb-12">
-                    <div class="flex flex-col items-center w-full">
-                        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
-                            <svg class="w-12 h-12 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
-                        </div>
-                        <div class="text-5xl font-light text-gray-900 mb-2 tracking-tight">999</div>
-                        <div id="call-status" class="text-green-600 font-medium">Emergency Services</div>
-                        <div class="mt-auto pt-4 w-full absolute bottom-10 left-0 flex justify-center">
-                             <button id="start-call-btn" class="w-20 h-20 bg-green-500 text-white rounded-full flex items-center justify-center shadow-xl border-4 border-green-100 transition transform active:scale-90">
-                                 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.28 1.464l-2.094 2.094a.25.25 0 0 0 .022.286l3.523 3.523a.25.25 0 0 0 .286.022l2.094-2.094c.49-.165 1.041-.049 1.464.28l2.298 2.298c.33.33.465.81.314 1.256l-1.096 2.296a.25.25 0 0 1-.286.223c-2.327-.375-4.497-1.63-6.23-3.366C3.375 9.47 2.115 7.302 1.74 4.975a.25.25 0 0 1 .223-.286l2.296-1.096c.446-.15.926-.015 1.256.314L5.163 5.48z"/></svg>
-                             </button>
-                        </div>
-                    </div>
+            <div class="flex justify-between items-center">
+                <button onclick="AppManager.goHome()" class="text-xs bg-white/10 hover:bg-white/20 text-gray-200 px-3 py-1.5 rounded-lg transition flex items-center backdrop-blur-sm border border-white/10">
+                    <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg> Exit
+                </button>
+                <div class="flex items-center bg-white/10 px-2 py-1 rounded-lg backdrop-blur-sm border border-white/10">
+                    <span class="text-[10px] text-gray-300 mr-2">Speed</span>
+                    <input type="range" id="speed-slider" min="0.5" max="1.5" value="1.0" step="0.05" class="w-16 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer accent-blue-400">
                 </div>
-    
-                <!-- In-Call Screen -->
-                <div id="in-call-screen" class="hidden h-full flex-col absolute top-0 left-0 w-full h-full in-call-bg pt-10 px-4 pb-8">
-                    <!-- Header Controls -->
-                    <div class="flex-shrink-0 flex justify-between items-center pb-4 border-b border-gray-600/30 mb-2 w-full">
-                        <button onclick="AppManager.goHome()" class="text-xs text-gray-400 hover:text-white flex items-center px-2 py-1 rounded hover:bg-white/10 transition"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>Home</button>
-                        <button onclick="OperatorApp.showTranscript()" class="text-xs text-blue-300 hover:text-white px-2">Transcript</button>
-                        <button onclick="OperatorApp.endCallHandler()" class="text-xs bg-gray-700/50 hover:bg-gray-600 text-white px-3 py-1 rounded-full border border-gray-600">Reset</button>
+                <button onclick="OperatorApp.endCallHandler()" class="text-xs bg-red-500/20 hover:bg-red-500/40 text-red-200 px-3 py-1.5 rounded-lg transition border border-red-500/30">Reset</button>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div id="callScreen" class="flex-grow flex flex-col justify-center relative z-10 w-full max-w-3xl mx-auto">
+            <div id="support-banner" class="hidden flex-shrink-0 mx-4 mt-2 bg-yellow-500/20 border border-yellow-500/50 text-yellow-200 p-3 rounded-lg text-sm text-center">
+                Voice recognition requires Chrome/Edge.
+            </div>
+            
+            <!-- Dialing Screen -->
+            <div id="dialing-screen" class="flex flex-col items-center justify-center h-full pb-20">
+                <div class="flex flex-col items-center w-full">
+                    <div class="w-32 h-32 bg-white/5 rounded-full flex items-center justify-center mb-8 border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.2)]">
+                        <svg class="w-16 h-16 text-white/40" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
                     </div>
-                    <!-- Call Status -->
-                    <div class="flex-shrink-0 pt-1 text-center">
-                           <div class="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
-                                <svg class="w-10 h-10 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg>
-                           </div>
-                           <div class="text-2xl font-bold text-white mb-0.5 tracking-wide">Emergency</div>
-                           <div class="text-gray-400 text-sm font-mono" id="call-timer">00:00</div>
-                    </div>
-                    <!-- Chat Area -->
-                    <div id="conversation-log" class="flex-grow my-4 overflow-y-auto glass-panel p-4 space-y-4 text-left shadow-inner"></div>
-                    <!-- Controls -->
-                    <div class="flex-shrink-0 w-full mb-24 relative z-30">
-                        <div id="voice-status" class="flex items-center justify-center text-xs text-gray-400 mb-2"><span id="mic-status-text">Tap button to speak</span></div>
-                        <button id="ptt-override-btn" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-bold flex items-center justify-center space-x-2 transition transform active:scale-95 mb-3 hidden disabled:opacity-50 shadow-lg border border-blue-500/50">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0V3z"/><path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"/></svg>
-                            <span id="ptt-text">Push to Speak</span>
-                        </button>
-                        <div id="user-options" class="space-y-2"></div>
-                    </div>
-                    <!-- End Button -->
-                    <div class="absolute bottom-8 left-0 w-full flex justify-center z-40">
-                         <button id="end-call-btn" class="w-20 h-20 bg-red-500 text-white rounded-full flex items-center justify-center transition transform active:scale-90 shadow-xl border-4 border-red-900/30 hidden">
-                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.28 1.464l-2.094 2.094a.25.25 0 0 0 .022.286l3.523 3.523a.25.25 0 0 0 .286.022l2.094-2.094c.49-.165 1.041-.049 1.464.28l2.298 2.298c.33.33.465.81.314 1.256l-1.096 2.296a.25.25 0 0 1-.286.223c-2.327-.375-4.497-1.63-6.23-3.366C3.375 9.47 2.115 7.302 1.74 4.975a.25.25 0 0 1 .223-.286l2.296-1.096c.446-.15.926-.015 1.256.314L5.163 5.48z" transform="rotate(135 8 8)"/></svg>
+                    <div class="text-7xl font-light text-white mb-3 tracking-tight drop-shadow-lg">999</div>
+                    <div id="call-status" class="text-xl text-green-400 font-medium tracking-wide">Emergency Services</div>
+                    <div class="mt-16">
+                         <button id="start-call-btn" class="w-24 h-24 bg-green-500 hover:bg-green-400 text-white rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(34,197,94,0.4)] border-4 border-green-600/30 transition-all transform active:scale-95 animate-pulse">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.28 1.464l-2.094 2.094a.25.25 0 0 0 .022.286l3.523 3.523a.25.25 0 0 0 .286.022l2.094-2.094c.49-.165 1.041-.049 1.464.28l2.298 2.298c.33.33.465.81.314 1.256l-1.096 2.296a.25.25 0 0 1-.286.223c-2.327-.375-4.497-1.63-6.23-3.366C3.375 9.47 2.115 7.302 1.74 4.975a.25.25 0 0 1 .223-.286l2.296-1.096c.446-.15.926-.015 1.256.314L5.163 5.48z"/></svg>
                          </button>
                     </div>
+                </div>
+            </div>
+
+            <!-- In-Call Screen -->
+            <div id="in-call-screen" class="hidden h-full flex-col w-full px-4 pb-6">
+                <div class="flex-shrink-0 pt-2 pb-4 flex items-center justify-between border-b border-white/10">
+                     <div class="flex items-center">
+                        <div class="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center mr-3 border border-gray-600">
+                             <svg class="w-6 h-6 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg>
+                        </div>
+                        <div>
+                            <div class="text-lg font-bold text-white leading-tight">Emergency</div>
+                            <div class="text-blue-400 text-xs font-mono" id="call-timer">00:00</div>
+                        </div>
+                     </div>
+                     <div class="flex space-x-2">
+                         <button onclick="OperatorApp.showOverride()" class="text-xs bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-200 border border-yellow-500/30 px-3 py-1.5 rounded-full transition flex items-center">
+                             Override
+                         </button>
+                         <button onclick="OperatorApp.showTranscript()" class="text-xs bg-blue-600/20 hover:bg-blue-600/40 text-blue-200 border border-blue-500/30 px-3 py-1.5 rounded-full transition flex items-center">
+                             Transcript
+                         </button>
+                     </div>
+                </div>
+                
+                <div id="conversation-log" class="flex-grow my-4 overflow-y-auto rounded-2xl bg-black/20 backdrop-blur-sm border border-white/5 p-4 space-y-4 text-left scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent"></div>
+                
+                <div class="flex-shrink-0 w-full relative z-30 bg-gray-900/80 backdrop-blur-xl rounded-t-3xl -mx-4 px-4 pt-4 pb-8 border-t border-white/10 absolute bottom-0 left-0 right-0 w-full">
+                    <div id="voice-status" class="flex items-center justify-center text-xs text-gray-400 mb-3">
+                        <span id="mic-status-text" class="flex items-center">
+                             <span class="w-2 h-2 bg-gray-500 rounded-full mr-2"></span> Tap to speak
+                        </span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button id="end-call-btn" class="flex-shrink-0 w-16 h-16 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition transform active:scale-90 shadow-lg border-2 border-red-400/50 hidden">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.28 1.464l-2.094 2.094a.25.25 0 0 0 .022.286l3.523 3.523a.25.25 0 0 0 .286.022l2.094-2.094c.49-.165 1.041-.049 1.464.28l2.298 2.298c.33.33.465.81.314 1.256l-1.096 2.296a.25.25 0 0 1-.286.223c-2.327-.375-4.497-1.63-6.23-3.366C3.375 9.47 2.115 7.302 1.74 4.975a.25.25 0 0 1 .223-.286l2.296-1.096c.446-.15.926-.015 1.256.314L5.163 5.48z" transform="rotate(135 8 8)"/></svg>
+                        </button>
+                        <button id="ptt-override-btn" class="flex-grow h-16 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold flex items-center justify-center space-x-2 transition transform active:scale-[0.98] hidden disabled:opacity-50 shadow-lg border-t border-blue-400/30">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0V3z"/><path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"/></svg>
+                            <span id="ptt-text" class="text-lg">Push to Speak</span>
+                        </button>
+                    </div>
+                    <div id="user-options" class="space-y-2 mt-2"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Transcript Modal -->
-    <div id="transcript-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl">
-            <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-xl">
-                <h3 class="font-bold text-lg">Call Transcript</h3>
-                <button onclick="document.getElementById('transcript-modal').classList.add('hidden')" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+    <div id="transcript-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm modal-overlay">
+        <div class="bg-white rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl">
+            <div class="p-5 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-xl">
+                <h3 class="font-bold text-xl text-gray-900">Call Transcript</h3>
+                <button onclick="document.getElementById('transcript-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-800 text-2xl transition">&times;</button>
             </div>
-            <div id="transcript-content" class="flex-grow overflow-y-auto p-4 space-y-2"></div>
-            <div class="p-4 border-t border-gray-200 bg-gray-50 rounded-b-xl flex justify-between">
-                <button onclick="document.getElementById('transcript-modal').classList.add('hidden')" class="text-gray-600 font-semibold px-4 py-2">Close</button>
-                <button onclick="OperatorApp.generatePDF()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg flex items-center">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Export PDF
+            <div id="transcript-content" class="flex-grow overflow-y-auto p-6 space-y-4 bg-white"></div>
+            <div class="p-5 border-t border-gray-200 bg-gray-50 rounded-b-xl flex justify-between items-center">
+                <button onclick="document.getElementById('transcript-modal').classList.add('hidden')" class="text-gray-600 hover:text-gray-900 font-medium px-4 py-2">Close</button>
+                <button onclick="OperatorApp.generatePDF()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-lg flex items-center shadow-sm transition transform active:scale-95">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Export PDF
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Override Modal -->
+    <div id="override-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm modal-overlay">
+        <div class="bg-gray-800 rounded-xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl text-white border border-gray-700">
+            <div class="p-5 border-b border-gray-700 flex justify-between items-center">
+                <h3 class="font-bold text-xl">Select Situation</h3>
+                <button onclick="document.getElementById('override-modal').classList.add('hidden')" class="text-gray-400 hover:text-white text-2xl transition">&times;</button>
+            </div>
+            <div class="flex-grow overflow-y-auto p-6 override-grid">
+                <button class="override-btn" onclick="OperatorApp.forceScenario('unresponsive_q1')">Unresponsive</button>
+                <button class="override-btn" onclick="OperatorApp.forceScenario('poisoning_q1')">Poisoning</button>
+                <button class="override-btn" onclick="OperatorApp.forceScenario('stroke_q1')">Stroke</button>
+                <button class="override-btn" onclick="OperatorApp.forceScenario('allergy_q1')">Anaphylaxis</button>
+                <button class="override-btn" onclick="OperatorApp.forceScenario('asthma_q1')">Asthma</button>
+                <button class="override-btn" onclick="OperatorApp.forceScenario('chest_pain_q1')">Heart Attack</button>
+                <button class="override-btn" onclick="OperatorApp.forceScenario('bleeding_q1')">Severe Bleeding</button>
+                <button class="override-btn" onclick="OperatorApp.forceScenario('burns_q1')">Burns</button>
+                <button class="override-btn" onclick="OperatorApp.forceScenario('seizure_q1')">Seizure</button>
+                <button class="override-btn" onclick="OperatorApp.forceScenario('hypothermia_q1')">Hypothermia</button>
             </div>
         </div>
     </div>
@@ -214,9 +236,7 @@
                 this.scenarioWrapper = document.getElementById('scenario-app-wrapper');
                 this.operatorWrapper = document.getElementById('operator-app-wrapper');
                 ScenarioApp.initDOM(); OperatorApp.initDOM(); this.setupSpeechRecognition();
-                if ('serviceWorker' in navigator && !window.location.href.startsWith('blob:')) {
-                    navigator.serviceWorker.register('/First-Aid-Training-Suite/sw.js', { scope: '/First-Aid-Training-Suite/' }).catch(() => {});
-                }
+                if ('serviceWorker' in navigator && !window.location.href.startsWith('blob:')) { navigator.serviceWorker.register('/First-Aid-Training-Suite/sw.js', { scope: '/First-Aid-Training-Suite/' }).catch(() => {}); }
             },
             launchScenarioApp: function() { this.masterScreen.classList.add('hidden'); this.operatorWrapper.classList.add('hidden'); this.scenarioWrapper.classList.remove('hidden'); this.scenarioWrapper.classList.add('flex'); this.currentApp = 'scenario'; ScenarioApp.start(); },
             launchOperatorApp: function() { this.masterScreen.classList.add('hidden'); this.scenarioWrapper.classList.add('hidden'); this.scenarioWrapper.classList.remove('flex'); this.operatorWrapper.classList.remove('hidden'); this.operatorWrapper.classList.add('flex'); this.currentApp = 'operator'; OperatorApp.start(); },
@@ -224,9 +244,7 @@
             setupSpeechRecognition: function() {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                 if (SpeechRecognition) {
-                    this.recognition = new SpeechRecognition(); this.recognition.lang = 'en-GB';
-                    this.recognition.continuous = false; // Force simple recognition
-                    this.recognition.interimResults = false;
+                    this.recognition = new SpeechRecognition(); this.recognition.lang = 'en-GB'; this.recognition.continuous = false; this.recognition.interimResults = false;
                     this.recognition.onstart = () => { this.isListening = true; if (this.currentApp === 'operator') OperatorApp.onRecStart(); };
                     this.recognition.onend = () => { this.isListening = false; if (this.currentApp === 'operator') OperatorApp.onRecEnd(); };
                     this.recognition.onresult = (event) => { if (this.currentApp === 'operator') OperatorApp.handleVoiceResult(event); };
@@ -236,7 +254,7 @@
         };
 
         const ScenarioApp = {
-            // Placeholder
+            scenarios: { head: {}, spinal: {}, crush: {}, abdominal: {} },
             initDOM: function() { this.mainMenu = document.getElementById('scenario-main-menu'); this.scenarioView = document.getElementById('scenario-view'); },
             start: function() { this.mainMenu.classList.remove('hidden'); this.scenarioView.classList.add('hidden'); },
             shutdown: function() { this.mainMenu.classList.add('hidden'); this.scenarioView.classList.add('hidden'); },
@@ -256,8 +274,28 @@
                 'take_number': { operator: "Can I take a contact telephone number please?", listen: true, default: 'ask_who' },
                 'ask_who': { operator: "Are you calling about yourself or someone else?", listen: true, default: 'ask_gender' },
                 'ask_gender': { operator: "Are they male or female?", listen: true, default: 'what_happened' },
-                'what_happened': { operator: "What’s happened today?", listen: true, keywords: { "wake": "unresponsive_q1", "passed out": "unresponsive_q1", "unresponsive": "unresponsive_q1", "tablets": "poisoning_q1", "pills": "poisoning_q1", "overdose": "poisoning_q1", "poison": "poisoning_q1", "stroke": "stroke_q1", "face": "stroke_q1", "slurred": "stroke_q1", "arm": "stroke_q1", "sting": "allergy_q1", "bee": "allergy_q1", "allergic": "allergy_q1", "swelling": "allergy_q1", "breathe": "allergy_q1" }, default: 'what_happened_retry' },
+                
+                'what_happened': { 
+                    operator: "What’s happened today?", 
+                    listen: true, 
+                    keywords: { 
+                        "wake": "unresponsive_q1", "passed out": "unresponsive_q1", "unresponsive": "unresponsive_q1", "faint": "unresponsive_q1", "unconscious": "unresponsive_q1", "collapsed": "unresponsive_q1",
+                        "tablets": "poisoning_q1", "pills": "poisoning_q1", "overdose": "poisoning_q1", "poison": "poisoning_q1", "drank": "poisoning_q1", "drink": "poisoning_q1", "bottle": "poisoning_q1", "substance": "poisoning_q1", "liquid": "poisoning_q1",
+                        "stroke": "stroke_q1", "face": "stroke_q1", "slurred": "stroke_q1", "arm": "stroke_q1", "droop": "stroke_q1", "cant speak": "stroke_q1", "funny": "stroke_q1",
+                        "sting": "allergy_q1", "bee": "allergy_q1", "allergic": "allergy_q1", "swelling": "allergy_q1", "breathe": "allergy_q1", "puffy": "allergy_q1", "swollen": "allergy_q1",
+                        "asthma": "asthma_q1", "wheezing": "asthma_q1", "inhaler": "asthma_q1", "breath": "asthma_q1",
+                        "chest": "chest_pain_q1", "heart": "chest_pain_q1", "pain": "chest_pain_q1", "arm": "chest_pain_q1",
+                        "bleed": "bleeding_q1", "cut": "bleeding_q1", "blood": "bleeding_q1", "wound": "bleeding_q1", "shock": "bleeding_q1",
+                        "burn": "burns_q1", "fire": "burns_q1", "hot": "burns_q1", "scald": "burns_q1", "acid": "burns_q1",
+                        "fit": "seizure_q1", "seizure": "seizure_q1", "shaking": "seizure_q1", "jerking": "seizure_q1",
+                        "cold": "hypothermia_q1", "shivering": "hypothermia_q1", "freezing": "hypothermia_q1", "confusion": "hypothermia_q1"
+                    }, 
+                    default: 'what_happened_retry' 
+                },
                 'what_happened_retry': { operator: "I didn't catch that. Can you tell me briefly what the main problem is?", listen: true, default: 'what_happened' },
+
+                // --- SCENARIOS ---
+                // 1. Unresponsive
                 'unresponsive_q1': { operator: "Is he responsive?", listen: true, keywords: {"no": "unresponsive_q2", "yes": "unresponsive_q2_yes"}, default: "unresponsive_q2" },
                 'unresponsive_q2': { operator: "Is he breathing normally?", listen: true, default: "unresponsive_q3" },
                 'unresponsive_q3': { operator: "So he’s breathing nice and regularly?", listen: true, default: "unresponsive_q4" },
@@ -266,9 +304,10 @@
                 'unresponsive_scene_safe': { operator: "The ambulance is being organised for you now. So the address we will be sending to is {address}. Can you confirm that's correct?", listen: true, next: "unresponsive_scene_safe_2" },
                 'unresponsive_scene_safe_2': { operator: "Is there any further info to help the crew? And is the scene safe?", listen: true, default: "unresponsive_advice_1" },
                 'unresponsive_advice_1': { operator: "The ambulance is on its way. I need you to gently turn him onto his side supporting his head, can you do that?", listen: true, default: "unresponsive_advice_2" },
-                'unresponsive_advice_2': { operator: "Well done. Stay with him and make sure he keeps breathing. Make sure he doesn't get too cold or overheated.", listen: false, next: "unresponsive_advice_3" },
-                'unresponsive_advice_3': { operator: "Keep an eye on him. If he develops new symptoms or gets worse, call 999 immediately. Is there anyone else to meet the vehicle?", listen: true, default: "unresponsive_end" },
+                'unresponsive_advice_2': { operator: "Well done. Stay with him and make sure he keeps breathing. Make sure he doesn't get too cold or overheated.", listen: false, next: "unresponsive_end" },
                 'unresponsive_end': { operator: "Okay. Help is on the way. I'm going to leave you now.", listen: false, next: "end_call_final" },
+
+                // 2. Poisoning
                 'poisoning_q1': { operator: "Is she responsive?", listen: true, default: "poisoning_q2" },
                 'poisoning_q2': { operator: "Can I speak to her?", listen: true, default: "poisoning_q3" },
                 'poisoning_q3': { operator: "Why is that?", listen: true, default: "poisoning_q4" },
@@ -286,6 +325,8 @@
                 'poisoning_advice_1': { operator: "Gather all medicines and packets in a bag to give to the crew. Can you do that?", listen: true, default: "poisoning_advice_2" },
                 'poisoning_advice_2': { operator: "Make sure she doesn't eat or drink. Keep her warm but not overheated. Stay with her.", listen: false, next: "poisoning_end" },
                 'poisoning_end': { operator: "Help is on the way. If she gets worse call 999 immediately.", listen: false, next: "end_call_final" },
+
+                // 3. Stroke
                 'stroke_q1': { operator: "Is he responsive?", listen: true, default: "stroke_q2" },
                 'stroke_q2': { operator: "Is he breathing normally?", listen: true, default: "stroke_q3" },
                 'stroke_q3': { operator: "Has he lost a lot of blood recently?", listen: true, default: "stroke_q4" },
@@ -300,6 +341,8 @@
                 'stroke_scene_safe_2': { operator: "Any further info? And is the scene safe?", listen: true, default: "stroke_advice_1" },
                 'stroke_advice_1': { operator: "Stay with him. If he becomes unresponsive, gently lay him down. Make sure he doesn't get too cold or hot.", listen: true, default: "stroke_end" },
                 'stroke_end': { operator: "Help is on the way. Call 999 immediately if he gets worse.", listen: false, next: "end_call_final" },
+
+                // 4. Allergy
                 'allergy_q1': { operator: "Is he responsive?", listen: true, default: "allergy_q2" },
                 'allergy_q2': { operator: "Is he breathing?", listen: true, default: "allergy_q3" },
                 'allergy_q3': { operator: "Is he fighting desperately for every breath?", listen: true, default: "allergy_q4" },
@@ -311,6 +354,68 @@
                 'allergy_advice_2': { operator: "Do you have antihistamine?", listen: true, default: "allergy_advice_3" },
                 'allergy_advice_3': { operator: "Make sure he sits as upright as possible to help breathing. Stay with him.", listen: true, default: "allergy_end" },
                 'allergy_end': { operator: "Help is on the way. Call 999 immediately if he changes.", listen: false, next: "end_call_final" },
+
+                // 5. Asthma
+                'asthma_q1': { operator: "Is the casualty having difficulty breathing?", listen: true, default: 'asthma_q2' },
+                'asthma_q2': { operator: "Can they speak in full sentences?", listen: true, default: 'asthma_q3' },
+                'asthma_q3': { operator: "Do they have a blue reliever inhaler?", listen: true, default: 'dispatch_asthma' },
+                'dispatch_asthma': { systemMessage: "Dispatching Ambulance...", next: "asthma_scene_safe" },
+                'asthma_scene_safe': { operator: "Ambulance organised. Address is {address}. Confirm?", listen: true, next: "asthma_scene_safe_2" },
+                'asthma_scene_safe_2': { operator: "Is the scene safe?", listen: true, default: "asthma_advice_1" },
+                'asthma_advice_1': { operator: "Sit them down comfortably. Encourage them to use their inhaler. Try to calm them down.", listen: false, next: "asthma_end" },
+                'asthma_end': { operator: "If they get worse or stop breathing, call 999 immediately.", listen: false, next: "end_call_final" },
+
+                // 6. Chest Pain (Heart Attack)
+                'chest_pain_q1': { operator: "Is the pain in the centre of the chest?", listen: true, default: 'chest_pain_q2' },
+                'chest_pain_q2': { operator: "Is the pain spreading to the arm, neck or jaw?", listen: true, default: 'chest_pain_q3' },
+                'chest_pain_q3': { operator: "Does the skin look pale or grey?", listen: true, default: 'dispatch_chest_pain' },
+                'dispatch_chest_pain': { systemMessage: "Dispatching Ambulance (Category 1)...", next: "chest_pain_scene_safe" },
+                'chest_pain_scene_safe': { operator: "Ambulance is coming immediately. Address is {address}. Confirm?", listen: true, next: "chest_pain_scene_safe_2" },
+                'chest_pain_scene_safe_2': { operator: "Is the scene safe?", listen: true, default: "chest_pain_advice_1" },
+                'chest_pain_advice_1': { operator: "Sit them on the floor against a wall (W position). Do not let them walk.", listen: false, next: "chest_pain_advice_2" },
+                'chest_pain_advice_2': { operator: "If they are over 16 and not allergic, give them 300mg of Aspirin to chew slowly.", listen: false, next: "chest_pain_end" },
+                'chest_pain_end': { operator: "Stay with them. If they become unresponsive, start CPR.", listen: false, next: "end_call_final" },
+
+                // 7. Bleeding (Severe)
+                'bleeding_q1': { operator: "Is the bleeding severe or spurting?", listen: true, default: 'bleeding_q2' },
+                'bleeding_q2': { operator: "Is there anything embedded in the wound?", listen: true, default: 'dispatch_bleeding' },
+                'dispatch_bleeding': { systemMessage: "Dispatching Ambulance...", next: "bleeding_scene_safe" },
+                'bleeding_scene_safe': { operator: "Ambulance organised. Address is {address}. Confirm?", listen: true, next: "bleeding_scene_safe_2" },
+                'bleeding_scene_safe_2': { operator: "Is the scene safe?", listen: true, default: "bleeding_advice_1" },
+                'bleeding_advice_1': { operator: "Apply direct pressure to the wound immediately. Use a clean cloth or dressing.", listen: false, next: "bleeding_advice_2" },
+                'bleeding_advice_2': { operator: "Help them lie down and raise their legs to treat for shock. Keep them warm.", listen: false, next: "bleeding_end" },
+                'bleeding_end': { operator: "Keep pressure applied until help arrives.", listen: false, next: "end_call_final" },
+
+                // 8. Burns
+                'burns_q1': { operator: "What caused the burn?", listen: true, default: 'burns_q2' },
+                'burns_q2': { operator: "Is the burn larger than the casualty's hand?", listen: true, default: 'dispatch_burns' },
+                'dispatch_burns': { systemMessage: "Dispatching Ambulance...", next: "burns_scene_safe" },
+                'burns_scene_safe': { operator: "Ambulance organised. Address is {address}. Confirm?", listen: true, next: "burns_scene_safe_2" },
+                'burns_scene_safe_2': { operator: "Is the scene safe?", listen: true, default: "burns_advice_1" },
+                'burns_advice_1': { operator: "Cool the burn with cold running water for at least 20 minutes.", listen: false, next: "burns_advice_2" },
+                'burns_advice_2': { operator: "Remove jewellery or watches near the burn before it swells. Do not remove stuck clothing.", listen: false, next: "burns_end" },
+                'burns_end': { operator: "Cover with cling film lengthways if available after cooling.", listen: false, next: "end_call_final" },
+
+                // 9. Seizures
+                'seizure_q1': { operator: "Is the casualty jerking or fitting?", listen: true, default: 'seizure_q2' },
+                'seizure_q2': { operator: "Is this their first seizure?", listen: true, default: 'dispatch_seizure' },
+                'dispatch_seizure': { systemMessage: "Dispatching Ambulance...", next: "seizure_scene_safe" },
+                'seizure_scene_safe': { operator: "Ambulance organised. Address is {address}. Confirm?", listen: true, next: "seizure_scene_safe_2" },
+                'seizure_scene_safe_2': { operator: "Is the scene safe?", listen: true, default: "seizure_advice_1" },
+                'seizure_advice_1': { operator: "Do not restrain them. Protect their head with something soft.", listen: false, next: "seizure_advice_2" },
+                'seizure_advice_2': { operator: "Time the seizure. When it stops, place them in the recovery position.", listen: false, next: "seizure_end" },
+                'seizure_end': { operator: "Monitor their breathing until help arrives.", listen: false, next: "end_call_final" },
+
+                // 10. Hypothermia
+                'hypothermia_q1': { operator: "Is the casualty shivering violently?", listen: true, default: 'hypothermia_q2' },
+                'hypothermia_q2': { operator: "Are they confused or slurring their speech?", listen: true, default: 'dispatch_hypothermia' },
+                'dispatch_hypothermia': { systemMessage: "Dispatching Ambulance / Mountain Rescue...", next: "hypothermia_scene_safe" },
+                'hypothermia_scene_safe': { operator: "Help is organised. Address is {address}. Confirm?", listen: true, next: "hypothermia_scene_safe_2" },
+                'hypothermia_scene_safe_2': { operator: "Is the scene safe?", listen: true, default: "hypothermia_advice_1" },
+                'hypothermia_advice_1': { operator: "Protect them from the wind and ground. Replace wet clothing if possible.", listen: false, next: "hypothermia_advice_2" },
+                'hypothermia_advice_2': { operator: "Warm them slowly. Do not rub their skin or give alcohol.", listen: false, next: "hypothermia_end" },
+                'hypothermia_end': { operator: "Give warm sweet drinks if they can swallow.", listen: false, next: "end_call_final" },
+
                 'end_call_final': { operator: "Call Ended.", listen: false }
             },
             initDOM: function() {
@@ -331,7 +436,6 @@
             onRecStart: function() { this.micIcon.classList.add('text-red-500', 'mic-listening'); this.micStatusText.textContent = 'Listening...'; this.pttOverrideBtn.classList.add('bg-red-600', 'border-red-600'); this.pttOverrideBtn.classList.remove('bg-blue-600', 'border-blue-500/50'); this.pttText.textContent = 'Listening... Tap to stop'; },
             onRecEnd: function() { 
                 this.micIcon.classList.remove('text-red-500', 'mic-listening'); this.micStatusText.textContent = ''; this.pttOverrideBtn.classList.add('bg-blue-600', 'border-blue-500/50'); this.pttOverrideBtn.classList.remove('bg-red-600', 'border-red-600'); this.pttText.textContent = 'Push to Speak';
-                // Simplified result handling called directly from result event
             },
             onRecError: function(e) { console.error('Rec error', e.error); this.micStatusText.textContent = 'Mic error.'; },
             handleVoiceResult: function(event) {
@@ -344,9 +448,6 @@
             },
             getRandomETA: function(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; },
             ensureAudioContext: function() { if (!this.audioCtx) { try { this.audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { console.error("Audio Context not supported"); return false; } } if (this.audioCtx.state === 'suspended') this.audioCtx.resume(); return this.audioCtx.state === 'running'; },
-            playTypingSound: function(duration) {
-                // Removed Background Typing as per request
-            },
             playSound: function(type, callback) { 
                 let duration = 0; if (type === 'dial') duration = 1500; if (type === 'ring') duration = 3000; 
                 if (!this.ensureAudioContext()) { if (callback) setTimeout(callback, duration); return; } 
@@ -365,10 +466,10 @@
             },
             loadVoices: function() { 
                 const voices = AppManager.synth.getVoices(); 
-                // Updated priority for high quality voices
+                // Updated priority for high quality/network voices
                 this.selectedVoice = voices.find(v => v.name.includes('Google UK English Female')) 
-                    || voices.find(v => v.name.includes('Daniel'))
-                    || voices.find(v => v.name.includes('Samantha'))
+                    || voices.find(v => v.name.includes('Daniel')) // iOS High Quality
+                    || voices.find(v => v.name.includes('Samantha')) // iOS High Quality
                     || voices.find(v => v.name.includes('Google US English')) 
                     || voices.find(v => v.lang === 'en-GB' && v.name.includes('Female')) 
                     || voices.find(v => v.lang === 'en-GB') 
@@ -383,7 +484,7 @@
                     const node = this.script[this.currentNodeId]; 
                     if (node && node.listen === true && AppManager.recognition) { 
                         this.finalTranscript = ''; 
-                        // 1 second safety buffer before listening
+                        // 1 second safety buffer before listening to prevent self-trigger
                         setTimeout(() => {
                             try {
                                 AppManager.recognition.continuous = false; 
@@ -396,12 +497,12 @@
                     } 
                 };
                 
-                // Increased failsafe timeout
-                setTimeout(() => { if (AppManager.synth.speaking) { } else if (!AppManager.isListening && this.currentUtterance) { if(this.currentUtterance.onend) this.currentUtterance.onend(); } }, (text.length * 200) + 4000); 
+                // Increased failsafe timeout for longer sentences (safety buffer)
+                setTimeout(() => { if (AppManager.synth.speaking) { } else if (!AppManager.isListening && this.currentUtterance) { if(this.currentUtterance.onend) this.currentUtterance.onend(); } }, (text.length * 150) + 3000); 
                 
                 if (this.selectedVoice) this.currentUtterance.voice = this.selectedVoice; 
                 this.currentUtterance.rate = this.handlerRate; 
-                this.currentUtterance.pitch = 1.0; // Reset pitch to neutral for less robotic sound
+                this.currentUtterance.pitch = 1.0; // Reset pitch to neutral for natural sound
                 AppManager.synth.speak(this.currentUtterance); 
             },
             toggleListening: function() { if (!AppManager.recognition) return; if (AppManager.isListening) { AppManager.recognition.stop(); } else { if (AppManager.synth.speaking) AppManager.synth.cancel(); this.finalTranscript = ''; try { AppManager.recognition.continuous = false; AppManager.recognition.interimResults = true; AppManager.recognition.start(); } catch (error) {} } },
@@ -409,7 +510,6 @@
                 if(this.currentNodeId === 'ambulance_address') this.capturedData['address'] = command;
                 if(this.currentNodeId === 'take_number') this.capturedData['phone'] = command;
                 const node = this.script[this.currentNodeId]; 
-                // Log System logic
                 this.history.push({ sender: 'system', text: `Processing input: "${command}" against node: ${this.currentNodeId}`, timestamp: new Date() });
                 this.addMessage(command, 'user'); 
                 
@@ -423,7 +523,6 @@
                     for (const keyword in keywords) { 
                         if (command.includes(keyword)) { 
                             nextNodeId = keywords[keyword]; 
-                            // Visual feedback for logic
                             this.addMessage(`[Detected "${keyword}" → Switching Protocol]`, 'system');
                             this.history.push({ sender: 'system', text: `Keyword matched: "${keyword}" -> Transitioning to ${nextNodeId}`, timestamp: new Date() });
                             break; 
@@ -436,10 +535,19 @@
                 if (nextNodeId) {
                     setTimeout(() => this.transitionToNode(nextNodeId, command), 200);
                 } else if (AppManager.recognition) { 
-                    // Retry logic
+                    // Retry logic: wait 3 seconds before listening again (Anti-Cutoff)
                     this.finalTranscript = ''; 
-                    setTimeout(() => { try { AppManager.recognition.continuous = false; AppManager.recognition.interimResults = true; AppManager.recognition.start(); } catch(e){} }, 200);
+                    setTimeout(() => { try { AppManager.recognition.continuous = false; AppManager.recognition.interimResults = true; AppManager.recognition.start(); } catch(e){} }, 3000);
                 } 
+            },
+            showOverride: function() {
+                document.getElementById('override-modal').classList.remove('hidden');
+            },
+            forceScenario: function(scenarioStartNode) {
+                document.getElementById('override-modal').classList.add('hidden');
+                this.addMessage("[Manual Override Selected]", 'system');
+                this.history.push({ sender: 'system', text: `Manual Override to: ${scenarioStartNode}`, timestamp: new Date() });
+                this.transitionToNode(scenarioStartNode);
             },
             startCall: function() { 
                 this.ensureAudioContext(); 
@@ -453,10 +561,7 @@
             removeTypingIndicator: function() { const i = document.getElementById('typing-indicator'); if (i) i.parentElement.remove(); },
             addMessage: function(text, sender, eta) { 
                 clearTimeout(this.operatorTypingTimeout); this.removeTypingIndicator(); 
-                
-                // Add to history
                 this.history.push({ sender, text, timestamp: new Date() });
-
                 const messageDiv = document.createElement('div'); const wrapper = document.createElement('div'); 
                 if (sender.startsWith('system')) { messageDiv.className = 'w-full max-w-xs text-center p-2 rounded-lg bg-gray-100 text-gray-600 border border-gray-200 font-semibold text-sm'; messageDiv.textContent = text + (eta ? ` (ETA: ${eta})` : ''); wrapper.className = 'w-full flex justify-center'; } 
                 else { 
@@ -480,7 +585,6 @@
                 this.showTypingIndicator(); 
                 // Increased delay for "Thinking" feeling (1.5s - 2.5s)
                 const delay = 1500 + Math.random() * 1000; 
-                // this.playTypingSound(delay); // REMOVED
                 this.operatorTypingTimeout = setTimeout(() => { 
                     if (node.operator) {
                         let text = node.operator;
@@ -517,24 +621,14 @@
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
                 let y = 10;
-                doc.setFontSize(16);
-                doc.text("Call Simulation Transcript", 10, y);
-                y += 10;
-                doc.setFontSize(10);
-                doc.text(`Date: ${new Date().toLocaleString()}`, 10, y);
-                y += 10;
-                doc.setLineWidth(0.5);
-                doc.line(10, y, 200, y);
-                y += 10;
-                
+                doc.setFontSize(16); doc.text("Call Simulation Transcript", 10, y); y += 10;
+                doc.setFontSize(10); doc.text(`Date: ${new Date().toLocaleString()}`, 10, y); y += 10;
+                doc.setLineWidth(0.5); doc.line(10, y, 200, y); y += 10;
                 this.history.forEach(item => {
                     if (y > 280) { doc.addPage(); y = 10; }
-                    doc.setFont("helvetica", "bold");
-                    doc.text(`${item.sender.toUpperCase()}:`, 10, y);
-                    doc.setFont("helvetica", "normal");
-                    const splitText = doc.splitTextToSize(item.text, 150);
-                    doc.text(splitText, 40, y);
-                    y += (splitText.length * 5) + 5;
+                    doc.setFont("helvetica", "bold"); doc.text(`${item.sender.toUpperCase()}:`, 10, y);
+                    doc.setFont("helvetica", "normal"); const splitText = doc.splitTextToSize(item.text, 150);
+                    doc.text(splitText, 40, y); y += (splitText.length * 5) + 5;
                 });
                 doc.save("Call_Transcript.pdf");
             }
