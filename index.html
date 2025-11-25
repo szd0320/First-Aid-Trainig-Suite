@@ -91,7 +91,8 @@
             <h1 class="text-4xl font-extrabold text-gray-900 mb-2 tracking-tight">First Aid Training</h1>
             <p class="text-gray-500 mb-10">Select a training module to begin.</p>
             <div class="grid grid-cols-1 gap-6">
-                <button onclick="AppManager.launchScenarioApp()" class="selection-button bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white">
+                <!-- Scenario Simulator Hidden as requested -->
+                <button onclick="AppManager.launchScenarioApp()" class="selection-button bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white hidden">
                     <div class="text-xl">Scenario Simulator</div>
                     <div class="text-sm opacity-90 font-normal mt-1">Practice AVPU & Treatments</div>
                 </button>
@@ -103,7 +104,7 @@
         </div>
     </div>
 
-    <!-- 2. Scenario App Container -->
+    <!-- 2. Scenario App Container (Hidden Logic kept for future use) -->
     <div id="scenario-app-wrapper" class="hidden flex items-center justify-center min-h-screen p-4">
         <div id="app" class="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8 relative overflow-hidden h-[90vh] flex flex-col">
             
@@ -532,40 +533,77 @@
                 if (type === 'dial') { 
                     const o1 = this.audioCtx.createOscillator(), o2 = this.audioCtx.createOscillator(), g = this.audioCtx.createGain(); o1.type = 'sine'; o1.frequency.value = 350; o2.type = 'sine'; o2.frequency.value = 440; g.gain.value = 0.1; o1.connect(g); o2.connect(g); g.connect(this.audioCtx.destination); o1.start(); o2.start(); setTimeout(() => { o1.stop(); o2.stop(); if (callback) callback(); }, duration); 
                 } else if (type === 'ring') { 
-                    const osc = this.audioCtx.createOscillator(), gain = this.audioCtx.createGain(), modulator = this.audioCtx.createOscillator(), modGain = this.audioCtx.createGain();
-                    osc.type = 'square'; osc.frequency.value = 800; modulator.type = 'sine'; modulator.frequency.value = 25; modulator.connect(modGain); modGain.connect(gain.gain); osc.connect(gain); gain.connect(this.audioCtx.destination);
-                    const now = this.audioCtx.currentTime; gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.2, now + 0.05); gain.gain.exponentialRampToValueAtTime(0.01, now + 2.0); osc.start(now); modulator.start(now); osc.stop(now + 2.5); modulator.stop(now + 2.5);
-                    setTimeout(() => { const osc2 = this.audioCtx.createOscillator(), gain2 = this.audioCtx.createGain(), modulator2 = this.audioCtx.createOscillator(), modGain2 = this.audioCtx.createGain(); osc2.type = 'square'; osc2.frequency.value = 800; modulator2.type = 'sine'; modulator2.frequency.value = 25; modulator2.connect(modGain2); modGain2.connect(gain2.gain); osc2.connect(gain2); gain2.connect(this.audioCtx.destination); const now2 = this.audioCtx.currentTime; gain2.gain.setValueAtTime(0, now2); gain2.gain.linearRampToValueAtTime(0.2, now2 + 0.05); gain2.gain.exponentialRampToValueAtTime(0.01, now2 + 2.0); osc2.start(now2); modulator2.start(now2); osc2.stop(now2 + 2.5); modulator2.stop(now2 + 2.5); }, 400);
+                    const createBell = (startTime) => {
+                        const osc = this.audioCtx.createOscillator();
+                        const gain = this.audioCtx.createGain();
+                        const modulator = this.audioCtx.createOscillator();
+                        const modGain = this.audioCtx.createGain();
+
+                        osc.type = 'triangle'; 
+                        osc.frequency.value = 650; 
+
+                        modulator.type = 'square'; 
+                        modulator.frequency.value = 25; 
+                        
+                        modulator.connect(modGain);
+                        modGain.connect(gain.gain); 
+                        
+                        modGain.gain.value = 0.3; 
+
+                        osc.connect(gain);
+                        gain.connect(this.audioCtx.destination);
+
+                        gain.gain.setValueAtTime(0, startTime);
+                        gain.gain.linearRampToValueAtTime(0.15, startTime + 0.1); 
+                        gain.gain.exponentialRampToValueAtTime(0.001, startTime + 1.8); 
+
+                        osc.start(startTime);
+                        modulator.start(startTime);
+                        osc.stop(startTime + 2.0);
+                        modulator.stop(startTime + 2.0);
+                    };
+
+                    const now = this.audioCtx.currentTime;
+                    createBell(now);
+                    createBell(now + 0.4); 
+
                     if (callback) setTimeout(callback, duration); 
                 } 
             },
             loadVoices: function() { const voices = AppManager.synth.getVoices(); this.selectedVoice = voices.find(v => v.name.includes('Google UK English Female')) || voices.find(v => v.name.includes('Google US English')) || voices.find(v => v.lang === 'en-GB' && v.name.includes('Female')) || voices.find(v => v.lang === 'en-GB') || voices.find(v => v.lang.startsWith('en-')) || null; },
             speakText: function(text) { 
-                if (AppManager.synth.speaking) AppManager.synth.cancel(); 
-                this.currentUtterance = new SpeechSynthesisUtterance(text); // Store in persistent property
+                if (this.currentUtterance) {
+                    this.currentUtterance.onend = null;
+                }
+                // Mute previous utterance logic before canceling to prevent "onend" firing and double-activating
+                if (AppManager.synth.speaking) {
+                    // No need to do anything special, just cancelling triggers onend, but we nullified the handler above.
+                    AppManager.synth.cancel(); 
+                }
+                
+                this.currentUtterance = new SpeechSynthesisUtterance(text); 
                 this.currentUtterance.onend = () => { 
                     const node = this.script[this.currentNodeId]; 
                     if (node && node.listen === true && AppManager.recognition) { 
                         this.finalTranscript = ''; 
-                        try {
-                            AppManager.recognition.continuous = false; 
-                            AppManager.recognition.interimResults = true; 
-                            AppManager.recognition.start(); 
-                        } catch(e) { console.error("Rec start error", e); }
+                        setTimeout(() => {
+                            try {
+                                AppManager.recognition.continuous = false; 
+                                AppManager.recognition.interimResults = true; 
+                                AppManager.recognition.start(); 
+                            } catch(e) { console.error("Rec start error", e); }
+                        }, 100);
                     } else if (node && node.listen === false && node.next) { 
                         setTimeout(() => this.transitionToNode(node.next), 500); 
                     } 
                 };
-                // Safety timeout in case onend doesn't fire
+                
                 setTimeout(() => {
-                    if (AppManager.synth.speaking) {
-                        // Still speaking, do nothing
-                    } else if (!AppManager.isListening && this.currentUtterance) {
-                        // Not speaking, not listening, assume onend failed
-                        console.warn("Forcing speech end event");
+                    if (AppManager.synth.speaking) { } 
+                    else if (!AppManager.isListening && this.currentUtterance) {
                         if(this.currentUtterance.onend) this.currentUtterance.onend();
                     }
-                }, (text.length * 100) + 2000); // Estimate duration + buffer
+                }, (text.length * 100) + 2000); 
 
                 if (this.selectedVoice) this.currentUtterance.voice = this.selectedVoice; 
                 this.currentUtterance.rate = this.handlerRate; 
@@ -583,9 +621,22 @@
                 const matchedOption = options.find(opt => command.includes(opt.text.toLowerCase().replace(/[,.]/g, ''))); 
                 if (matchedOption) nextNodeId = matchedOption.next; else { for (const keyword in keywords) { if (command.includes(keyword)) { nextNodeId = keywords[keyword]; break; } } } 
                 if (!nextNodeId && node.default) nextNodeId = node.default; 
-                if (nextNodeId) this.transitionToNode(nextNodeId, command); else if (AppManager.recognition) { this.finalTranscript = ''; try { AppManager.recognition.continuous = false; AppManager.recognition.interimResults = true; AppManager.recognition.start(); } catch(e){} } 
+                
+                if (nextNodeId) {
+                    setTimeout(() => this.transitionToNode(nextNodeId, command), 200);
+                } else if (AppManager.recognition) { 
+                    this.finalTranscript = ''; 
+                    setTimeout(() => {
+                        try { 
+                            AppManager.recognition.continuous = false; 
+                            AppManager.recognition.interimResults = true; 
+                            AppManager.recognition.start(); 
+                        } catch(e){} 
+                    }, 200);
+                } 
             },
             startCall: function() { 
+                this.ensureAudioContext(); 
                 this.callStatus.textContent = 'Dialing...'; this.dialingScreen.classList.add('hidden'); this.inCallScreen.classList.remove('hidden'); this.inCallScreen.classList.add('flex'); 
                 this.startCallBtn.classList.add('hidden'); 
                 this.endCallBtn.classList.remove('hidden');
