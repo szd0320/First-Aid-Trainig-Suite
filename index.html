@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>First-Aid Training Suite</title>
     
-    <!-- PWA Manifest Link (GitHub Pages Path) -->
+    <!-- PWA Manifest Link -->
     <link rel="manifest" href="/First-Aid-Training-Suite/manifest.json">
     <link rel="canonical" href="https://szd0320.github.io/First-Aid-Training-Suite/" />
     
@@ -41,7 +41,6 @@
             background-color: #ffffff; /* Default screen bg */
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), inset 0 0 0 2px #000;
         }
-        /* Notch simulation */
         .phone-notch {
             position: absolute;
             top: 0;
@@ -54,36 +53,23 @@
             border-bottom-right-radius: 12px;
             z-index: 20;
         }
-
-        /* In-Call Dark Mode Theme */
-        .in-call-bg {
-            background: linear-gradient(180deg, #1a202c 0%, #2d3748 100%);
-            color: white;
-        }
-        
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
+        .in-call-bg { background: linear-gradient(180deg, #1a202c 0%, #2d3748 100%); color: white; }
+        .glass-panel { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 1rem; border: 1px solid rgba(255, 255, 255, 0.1); }
         @keyframes operatorPulse { 0%, 100% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.1); opacity: 1; } }
         .mic-listening { animation: operatorPulse 1.5s infinite; color: #ef4444; }
-        
-        /* Typing Indicator */
         .typing-indicator span { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #9ca3af; animation: typing-bounce 1.2s infinite ease-in-out; }
-        .in-call-bg .typing-indicator span { background-color: #e2e8f0; } /* Lighter dots on dark bg */
+        .in-call-bg .typing-indicator span { background-color: #e2e8f0; }
         .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
         .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
         @keyframes typing-bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
-
-        /* --- Selection Screen --- */
         .selection-button { color: white; font-weight: bold; padding: 1.5rem; border-radius: 1rem; transition: all 0.2s; width: 100%; max-width: 400px; text-align: center; transform: scale(1); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .selection-button:hover { transform: scale(1.02); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
+
+    <!-- Build Number -->
+    <div class="fixed bottom-2 left-2 text-xs text-gray-400 font-mono z-50 pointer-events-none">v2.14</div>
 
     <!-- 1. Master Selection Screen -->
     <div id="master-selection-screen" class="flex flex-col items-center justify-center min-h-screen p-6 bg-gray-50">
@@ -91,10 +77,8 @@
             <h1 class="text-4xl font-extrabold text-gray-900 mb-2 tracking-tight">First Aid Training</h1>
             <p class="text-gray-500 mb-10">Select a training module to begin.</p>
             <div class="grid grid-cols-1 gap-6">
-                <!-- Scenario Simulator Hidden as requested -->
                 <button onclick="AppManager.launchScenarioApp()" class="selection-button bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white hidden">
                     <div class="text-xl">Scenario Simulator</div>
-                    <div class="text-sm opacity-90 font-normal mt-1">Practice AVPU & Treatments</div>
                 </button>
                 <button onclick="AppManager.launchOperatorApp()" class="selection-button bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white">
                     <div class="text-xl">999 Call Operator</div>
@@ -104,10 +88,14 @@
         </div>
     </div>
 
-    <!-- 2. Scenario App Container (Hidden Logic kept for future use) -->
+    <!-- 2. Scenario App Container -->
     <div id="scenario-app-wrapper" class="hidden flex items-center justify-center min-h-screen p-4">
+        <!-- (Scenario App Content Hidden) -->
         <div id="app" class="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8 relative overflow-hidden h-[90vh] flex flex-col">
-            <!-- (Scenario App Content Hidden for Focus) -->
+            <div id="scenario-main-menu" class="fade-in flex-grow flex flex-col justify-center">
+                <button onclick="AppManager.goHome()" class="mt-8 text-gray-500 hover:text-gray-700 font-medium py-2 px-4 rounded-lg self-center">← Back to Main Menu</button>
+            </div>
+            <div id="scenario-view" class="hidden"></div>
         </div>
     </div>
 
@@ -125,8 +113,6 @@
         <!-- Phone Frame -->
         <div class="w-full max-w-sm mx-auto phone-frame flex flex-col" style="height: 80vh; max-height: 720px;">
             <div class="phone-notch"></div>
-            
-            <!-- Phone Top Bar -->
             <div class="flex justify-between items-center text-xs font-medium px-6 pt-3 pb-2 z-30 relative text-gray-800" id="status-bar">
                 <span id="currentTime">12:00</span>
                 <div class="flex items-center space-x-1.5">
@@ -134,12 +120,9 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M2 6h10v4H2V6z"/><path d="M2 4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H2zm13 1a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-1v-4h1z"/></svg>
                 </div>
             </div>
-    
-            <!-- Main Screen Content -->
             <div id="callScreen" class="flex-grow flex flex-col justify-between text-center p-4 mt-2 relative z-10">
                 <div id="support-banner" class="hidden flex-shrink-0 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-2 mb-2 rounded-md">Voice Not Supported</div>
                 
-                <!-- Dialing Screen (Light Mode) -->
                 <div id="dialing-screen" class="flex flex-col items-center justify-center h-full pb-12">
                     <div class="flex flex-col items-center w-full">
                         <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
@@ -147,27 +130,19 @@
                         </div>
                         <div class="text-5xl font-light text-gray-900 mb-2 tracking-tight">999</div>
                         <div id="call-status" class="text-green-600 font-medium">Emergency Services</div>
-                        
                         <div class="mt-auto pt-4 w-full absolute bottom-10 left-0 flex justify-center">
-                             <!-- Answer Button (Green) -->
                              <button id="start-call-btn" class="w-20 h-20 bg-green-500 text-white rounded-full flex items-center justify-center shadow-xl border-4 border-green-100 transition transform active:scale-90">
-                                 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 16 16">
-                                     <path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.28 1.464l-2.094 2.094a.25.25 0 0 0 .022.286l3.523 3.523a.25.25 0 0 0 .286.022l2.094-2.094c.49-.165 1.041-.049 1.464.28l2.298 2.298c.33.33.465.81.314 1.256l-1.096 2.296a.25.25 0 0 1-.286.223c-2.327-.375-4.497-1.63-6.23-3.366C3.375 9.47 2.115 7.302 1.74 4.975a.25.25 0 0 1 .223-.286l2.296-1.096c.446-.15.926-.015 1.256.314L5.163 5.48z"/>
-                                 </svg>
+                                 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.28 1.464l-2.094 2.094a.25.25 0 0 0 .022.286l3.523 3.523a.25.25 0 0 0 .286.022l2.094-2.094c.49-.165 1.041-.049 1.464.28l2.298 2.298c.33.33.465.81.314 1.256l-1.096 2.296a.25.25 0 0 1-.286.223c-2.327-.375-4.497-1.63-6.23-3.366C3.375 9.47 2.115 7.302 1.74 4.975a.25.25 0 0 1 .223-.286l2.296-1.096c.446-.15.926-.015 1.256.314L5.163 5.48z"/></svg>
                              </button>
                         </div>
                     </div>
                 </div>
     
-                <!-- In-Call Screen (Dark Mode) -->
                 <div id="in-call-screen" class="hidden h-full flex-col absolute top-0 left-0 w-full h-full in-call-bg pt-10 px-4 pb-8">
-                    <!-- Header Controls -->
                     <div class="flex-shrink-0 flex justify-between items-center pb-4 border-b border-gray-600/30 mb-2 w-full">
                         <button onclick="AppManager.goHome()" class="text-xs text-gray-400 hover:text-white flex items-center px-2 py-1 rounded hover:bg-white/10 transition"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>Home</button>
                         <button onclick="OperatorApp.endCallHandler()" class="text-xs bg-gray-700/50 hover:bg-gray-600 text-white px-3 py-1 rounded-full border border-gray-600">Reset</button>
                     </div>
-
-                    <!-- Contact Info -->
                     <div class="flex-shrink-0 pt-1 text-center">
                            <div class="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
                                 <svg class="w-10 h-10 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg>
@@ -175,28 +150,18 @@
                            <div class="text-2xl font-bold text-white mb-0.5 tracking-wide">Emergency</div>
                            <div class="text-gray-400 text-sm font-mono" id="call-timer">00:00</div>
                     </div>
-                    
-                    <!-- Dynamic Chat Log -->
                     <div id="conversation-log" class="flex-grow my-4 overflow-y-auto glass-panel p-4 space-y-4 text-left shadow-inner"></div>
-                    
-                    <!-- User Interaction Area -->
                     <div class="flex-shrink-0 w-full mb-24 relative z-30">
-                        <div id="voice-status" class="flex items-center justify-center text-xs text-gray-400 mb-2">
-                            <span id="mic-status-text">Tap button to speak</span>
-                        </div>
+                        <div id="voice-status" class="flex items-center justify-center text-xs text-gray-400 mb-2"><span id="mic-status-text">Tap button to speak</span></div>
                         <button id="ptt-override-btn" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-bold flex items-center justify-center space-x-2 transition transform active:scale-95 mb-3 hidden disabled:opacity-50 shadow-lg border border-blue-500/50">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0V3z"/><path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"/></svg>
                             <span id="ptt-text">Push to Speak</span>
                         </button>
                         <div id="user-options" class="space-y-2"></div>
                     </div>
-    
-                    <!-- End Button (Absolute Positioned) -->
                     <div class="absolute bottom-8 left-0 w-full flex justify-center z-40">
                          <button id="end-call-btn" class="w-20 h-20 bg-red-500 text-white rounded-full flex items-center justify-center transition transform active:scale-90 shadow-xl border-4 border-red-900/30 hidden">
-                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
-                                 <path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.28 1.464l-2.094 2.094a.25.25 0 0 0 .022.286l3.523 3.523a.25.25 0 0 0 .286.022l2.094-2.094c.49-.165 1.041-.049 1.464.28l2.298 2.298c.33.33.465.81.314 1.256l-1.096 2.296a.25.25 0 0 1-.286.223c-2.327-.375-4.497-1.63-6.23-3.366C3.375 9.47 2.115 7.302 1.74 4.975a.25.25 0 0 1 .223-.286l2.296-1.096c.446-.15.926-.015 1.256.314L5.163 5.48z" transform="rotate(135 8 8)"/> 
-                             </svg>
+                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.28 1.464l-2.094 2.094a.25.25 0 0 0 .022.286l3.523 3.523a.25.25 0 0 0 .286.022l2.094-2.094c.49-.165 1.041-.049 1.464.28l2.298 2.298c.33.33.465.81.314 1.256l-1.096 2.296a.25.25 0 0 1-.286.223c-2.327-.375-4.497-1.63-6.23-3.366C3.375 9.47 2.115 7.302 1.74 4.975a.25.25 0 0 1 .223-.286l2.296-1.096c.446-.15.926-.015 1.256.314L5.163 5.48z" transform="rotate(135 8 8)"/></svg>
                          </button>
                     </div>
                 </div>
@@ -212,18 +177,8 @@
                 this.scenarioWrapper = document.getElementById('scenario-app-wrapper');
                 this.operatorWrapper = document.getElementById('operator-app-wrapper');
                 ScenarioApp.initDOM(); OperatorApp.initDOM(); this.setupSpeechRecognition();
-                
-                // Service Worker Registration for PWA (Safe Check)
-                // Only register if supported and not a blob url to prevent errors in preview
                 if ('serviceWorker' in navigator && !window.location.href.startsWith('blob:')) {
-                    navigator.serviceWorker.register(
-                        '/First-Aid-Training-Suite/sw.js',
-                        { scope: '/First-Aid-Training-Suite/' }
-                    ).then(registration => {
-                        console.log('Service Worker registered with scope:', registration.scope);
-                    }).catch(error => {
-                        console.log('Service Worker registration skipped/failed:', error);
-                    });
+                    navigator.serviceWorker.register('/First-Aid-Training-Suite/sw.js', { scope: '/First-Aid-Training-Suite/' }).catch(() => {});
                 }
             },
             launchScenarioApp: function() { this.masterScreen.classList.add('hidden'); this.operatorWrapper.classList.add('hidden'); this.scenarioWrapper.classList.remove('hidden'); this.scenarioWrapper.classList.add('flex'); this.currentApp = 'scenario'; ScenarioApp.start(); },
@@ -233,61 +188,39 @@
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                 if (SpeechRecognition) {
                     this.recognition = new SpeechRecognition(); this.recognition.lang = 'en-GB';
-                    this.recognition.onstart = () => { this.isListening = true; if (this.currentApp === 'scenario') ScenarioApp.onRecStart(); else if (this.currentApp === 'operator') OperatorApp.onRecStart(); };
-                    this.recognition.onend = () => { this.isListening = false; if (this.currentApp === 'scenario') ScenarioApp.onRecEnd(); else if (this.currentApp === 'operator') OperatorApp.onRecEnd(); };
-                    this.recognition.onresult = (event) => { if (this.currentApp === 'scenario') ScenarioApp.handleVoiceResult(event); else if (this.currentApp === 'operator') OperatorApp.handleVoiceResult(event); };
-                    this.recognition.onerror = (event) => { if (this.currentApp === 'scenario') ScenarioApp.onRecError(event); else if (this.currentApp === 'operator') OperatorApp.onRecError(event); };
-                } else { document.getElementById('unsupported-browser')?.classList.remove('hidden'); document.getElementById('support-banner')?.classList.remove('hidden'); }
+                    this.recognition.continuous = false; // Force simple recognition
+                    this.recognition.interimResults = false;
+                    this.recognition.onstart = () => { this.isListening = true; if (this.currentApp === 'operator') OperatorApp.onRecStart(); };
+                    this.recognition.onend = () => { this.isListening = false; if (this.currentApp === 'operator') OperatorApp.onRecEnd(); };
+                    this.recognition.onresult = (event) => { if (this.currentApp === 'operator') OperatorApp.handleVoiceResult(event); };
+                    this.recognition.onerror = (event) => { console.error("Rec error", event.error); if (this.currentApp === 'operator') OperatorApp.onRecError(event); };
+                } else { document.getElementById('unsupported-browser')?.classList.remove('hidden'); }
             }
         };
 
         const ScenarioApp = {
-            // (Scenario App Logic - Kept minimal as focus is on Operator)
-            scenarios: { head: {}, spinal: {}, crush: {}, abdominal: {} },
-            initDOM: function() { 
-                this.mainMenu = document.getElementById('scenario-main-menu'); 
-                this.scenarioView = document.getElementById('scenario-view'); 
-                // ... other DOM inits
-            },
+            // Placeholder
+            initDOM: function() { this.mainMenu = document.getElementById('scenario-main-menu'); this.scenarioView = document.getElementById('scenario-view'); },
             start: function() { this.mainMenu.classList.remove('hidden'); this.scenarioView.classList.add('hidden'); },
             shutdown: function() { this.mainMenu.classList.add('hidden'); this.scenarioView.classList.add('hidden'); },
-            // ... other methods ...
-            // Minimal placeholder methods to avoid errors if accidentally called
-            startScenario: function() {}, toggleTrainerPanel: function() {}, endCurrentScenario: function() {}, startListening: function() {}, onRecStart: function() {}, onRecEnd: function() {}, onRecError: function() {}, handleVoiceResult: function() {},
+            startScenario: function() {}, toggleTrainerPanel: function() {}, endCurrentScenario: function() {}, changeAVPU: function() {}, askAI: function() {}, startListening: function() {}
         };
 
         const OperatorApp = {
-            callStatus: null, dialingScreen: null, inCallScreen: null, conversationLog: null, userOptions: null, callTimerDisplay: null, startCallBtn: null, endCallBtn: null, micIcon: null, micStatusText: null, pttOverrideBtn: null, pttText: null, speedSlider: null, speedValueDisplay: null, callTimer: null, seconds: 0, currentNodeId: 'start', finalTranscript: "", audioCtx: null, operatorTypingTimeout: null, handlerRate: 1.0, speechEndTimeout: null, currentETA: null, capturedData: {}, currentUtterance: null,
+            callStatus: null, dialingScreen: null, inCallScreen: null, conversationLog: null, userOptions: null, callTimerDisplay: null, startCallBtn: null, endCallBtn: null, micIcon: null, micStatusText: null, pttOverrideBtn: null, pttText: null, speedSlider: null, speedValueDisplay: null, callTimer: null, seconds: 0, currentNodeId: 'start', finalTranscript: "", audioCtx: null, operatorTypingTimeout: null, handlerRate: 1.0, speechEndTimeout: null, currentETA: null, capturedData: {}, currentUtterance: null, retryCount: 0,
             
-            // Simplified and Corrected Script Flow
             script: {
                 'start_call': { operator: "Hello, emergency service operator. Which service do you require? Fire, police or ambulance?", listen: true, keywords: {"ambulance": "connect_ambulance", "police": "connect_police", "fire": "connect_fire"} },
                 'connect_police': { operator: "Connecting to Police.", listen: false, next: 'end_call_final' },
                 'connect_fire': { operator: "Connecting to Fire Service.", listen: false, next: 'end_call_final' },
                 'connect_ambulance': { operator: "Connecting you now.", listen: false, next: 'ambulance_address' },
-                
-                // Data Capture Steps - No redirects or legacy logic here
                 'ambulance_address': { operator: "Ambulance service, what’s the address of the emergency?", listen: true, default: 'address_confirm' },
                 'address_confirm': { operator: "Can you give me the full address again just to confirm?", listen: true, default: 'take_number' },
                 'take_number': { operator: "Can I take a contact telephone number please?", listen: true, default: 'ask_who' },
                 'ask_who': { operator: "Are you calling about yourself or someone else?", listen: true, default: 'ask_gender' },
                 'ask_gender': { operator: "Are they male or female?", listen: true, default: 'what_happened' },
-                
-                // Triage Point
-                'what_happened': { 
-                    operator: "What’s happened today?", 
-                    listen: true, 
-                    keywords: { 
-                        "wake": "unresponsive_q1", "passed out": "unresponsive_q1", "unresponsive": "unresponsive_q1", 
-                        "tablets": "poisoning_q1", "pills": "poisoning_q1", "overdose": "poisoning_q1", "poison": "poisoning_q1", 
-                        "stroke": "stroke_q1", "face": "stroke_q1", "slurred": "stroke_q1", "arm": "stroke_q1", 
-                        "sting": "allergy_q1", "bee": "allergy_q1", "allergic": "allergy_q1", "swelling": "allergy_q1", "breathe": "allergy_q1" 
-                    }, 
-                    default: 'what_happened_retry' 
-                },
+                'what_happened': { operator: "What’s happened today?", listen: true, keywords: { "wake": "unresponsive_q1", "passed out": "unresponsive_q1", "unresponsive": "unresponsive_q1", "tablets": "poisoning_q1", "pills": "poisoning_q1", "overdose": "poisoning_q1", "poison": "poisoning_q1", "stroke": "stroke_q1", "face": "stroke_q1", "slurred": "stroke_q1", "arm": "stroke_q1", "sting": "allergy_q1", "bee": "allergy_q1", "allergic": "allergy_q1", "swelling": "allergy_q1", "breathe": "allergy_q1" }, default: 'what_happened_retry' },
                 'what_happened_retry': { operator: "I didn't catch that. Can you tell me briefly what the main problem is?", listen: true, default: 'what_happened' },
-
-                // Scenario 1: Unresponsive
                 'unresponsive_q1': { operator: "Is he responsive?", listen: true, keywords: {"no": "unresponsive_q2", "yes": "unresponsive_q2_yes"}, default: "unresponsive_q2" },
                 'unresponsive_q2': { operator: "Is he breathing normally?", listen: true, default: "unresponsive_q3" },
                 'unresponsive_q3': { operator: "So he’s breathing nice and regularly?", listen: true, default: "unresponsive_q4" },
@@ -299,8 +232,6 @@
                 'unresponsive_advice_2': { operator: "Well done. Stay with him and make sure he keeps breathing. Make sure he doesn't get too cold or overheated.", listen: false, next: "unresponsive_advice_3" },
                 'unresponsive_advice_3': { operator: "Keep an eye on him. If he develops new symptoms or gets worse, call 999 immediately. Is there anyone else to meet the vehicle?", listen: true, default: "unresponsive_end" },
                 'unresponsive_end': { operator: "Okay. Help is on the way. I'm going to leave you now.", listen: false, next: "end_call_final" },
-
-                // Scenario 2: Poisoning
                 'poisoning_q1': { operator: "Is she responsive?", listen: true, default: "poisoning_q2" },
                 'poisoning_q2': { operator: "Can I speak to her?", listen: true, default: "poisoning_q3" },
                 'poisoning_q3': { operator: "Why is that?", listen: true, default: "poisoning_q4" },
@@ -318,8 +249,6 @@
                 'poisoning_advice_1': { operator: "Gather all medicines and packets in a bag to give to the crew. Can you do that?", listen: true, default: "poisoning_advice_2" },
                 'poisoning_advice_2': { operator: "Make sure she doesn't eat or drink. Keep her warm but not overheated. Stay with her.", listen: false, next: "poisoning_end" },
                 'poisoning_end': { operator: "Help is on the way. If she gets worse call 999 immediately.", listen: false, next: "end_call_final" },
-
-                // Scenario 3: Stroke
                 'stroke_q1': { operator: "Is he responsive?", listen: true, default: "stroke_q2" },
                 'stroke_q2': { operator: "Is he breathing normally?", listen: true, default: "stroke_q3" },
                 'stroke_q3': { operator: "Has he lost a lot of blood recently?", listen: true, default: "stroke_q4" },
@@ -334,8 +263,6 @@
                 'stroke_scene_safe_2': { operator: "Any further info? And is the scene safe?", listen: true, default: "stroke_advice_1" },
                 'stroke_advice_1': { operator: "Stay with him. If he becomes unresponsive, gently lay him down. Make sure he doesn't get too cold or hot.", listen: true, default: "stroke_end" },
                 'stroke_end': { operator: "Help is on the way. Call 999 immediately if he gets worse.", listen: false, next: "end_call_final" },
-
-                // Scenario 4: Allergy
                 'allergy_q1': { operator: "Is he responsive?", listen: true, default: "allergy_q2" },
                 'allergy_q2': { operator: "Is he breathing?", listen: true, default: "allergy_q3" },
                 'allergy_q3': { operator: "Is he fighting desperately for every breath?", listen: true, default: "allergy_q4" },
@@ -347,7 +274,6 @@
                 'allergy_advice_2': { operator: "Do you have antihistamine?", listen: true, default: "allergy_advice_3" },
                 'allergy_advice_3': { operator: "Make sure he sits as upright as possible to help breathing. Stay with him.", listen: true, default: "allergy_end" },
                 'allergy_end': { operator: "Help is on the way. Call 999 immediately if he changes.", listen: false, next: "end_call_final" },
-
                 'end_call_final': { operator: "Call Ended.", listen: false }
             },
             initDOM: function() {
@@ -366,9 +292,19 @@
             endCallHandler: function() { clearInterval(this.callTimer); if (AppManager.synth.speaking) AppManager.synth.cancel(); if (AppManager.recognition && AppManager.isListening) AppManager.recognition.stop(); if (this.audioCtx && this.audioCtx.state !== 'closed') this.audioCtx.close().then(() => this.audioCtx = null); this.callStatus.textContent = 'Call Ended'; setTimeout(() => { this.shutdown(); }, 1500); },
             updateSpeed: function(e) { this.handlerRate = parseFloat(e.target.value); },
             onRecStart: function() { this.micIcon.classList.add('text-red-500', 'mic-listening'); this.micStatusText.textContent = 'Listening...'; this.pttOverrideBtn.classList.add('bg-red-600', 'border-red-600'); this.pttOverrideBtn.classList.remove('bg-blue-600', 'border-blue-500/50'); this.pttText.textContent = 'Listening... Tap to stop'; },
-            onRecEnd: function() { this.micIcon.classList.remove('text-red-500', 'mic-listening'); this.micStatusText.textContent = ''; this.pttOverrideBtn.classList.add('bg-blue-600', 'border-blue-500/50'); this.pttOverrideBtn.classList.remove('bg-red-600', 'border-red-600'); this.pttText.textContent = 'Push to Speak'; if (this.finalTranscript) this.handleVoiceCommand(this.finalTranscript.toLowerCase().trim()); },
-            onRecError: function(e) { console.error('Speech recognition error:', e.error); this.micStatusText.textContent = 'Mic error.'; },
-            handleVoiceResult: function(e) { clearTimeout(this.speechEndTimeout); let interimTranscript = ''; for (let i = e.resultIndex; i < e.results.length; ++i) { if (e.results[i].isFinal) { this.finalTranscript += e.results[i][0].transcript; AppManager.recognition.stop(); return; } else interimTranscript += e.results[i][0].transcript; } this.speechEndTimeout = setTimeout(() => { if (AppManager.isListening) { this.finalTranscript = interimTranscript; AppManager.recognition.stop(); } }, 1500); },
+            onRecEnd: function() { 
+                this.micIcon.classList.remove('text-red-500', 'mic-listening'); this.micStatusText.textContent = ''; this.pttOverrideBtn.classList.add('bg-blue-600', 'border-blue-500/50'); this.pttOverrideBtn.classList.remove('bg-red-600', 'border-red-600'); this.pttText.textContent = 'Push to Speak';
+                // Simplified result handling called directly from result event
+            },
+            onRecError: function(e) { console.error('Rec error', e.error); this.micStatusText.textContent = 'Mic error.'; },
+            handleVoiceResult: function(event) {
+                const transcript = event.results[0][0].transcript.toLowerCase().trim();
+                if (transcript) {
+                    this.finalTranscript = transcript;
+                    AppManager.recognition.stop();
+                    this.handleVoiceCommand(transcript);
+                }
+            },
             getRandomETA: function(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; },
             ensureAudioContext: function() { if (!this.audioCtx) { try { this.audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { console.error("Audio Context not supported"); return false; } } if (this.audioCtx.state === 'suspended') this.audioCtx.resume(); return this.audioCtx.state === 'running'; },
             playTypingSound: function(duration) {
@@ -391,18 +327,9 @@
                     const o1 = this.audioCtx.createOscillator(), o2 = this.audioCtx.createOscillator(), g = this.audioCtx.createGain(); o1.type = 'sine'; o1.frequency.value = 350; o2.type = 'sine'; o2.frequency.value = 440; g.gain.value = 0.1; o1.connect(g); o2.connect(g); g.connect(this.audioCtx.destination); o1.start(); o2.start(); setTimeout(() => { o1.stop(); o2.stop(); if (callback) callback(); }, duration); 
                 } else if (type === 'ring') { 
                     const createBell = (startTime) => {
-                        const osc = this.audioCtx.createOscillator();
-                        const gain = this.audioCtx.createGain();
-                        const modulator = this.audioCtx.createOscillator();
-                        const modGain = this.audioCtx.createGain();
-                        osc.type = 'triangle'; osc.frequency.value = 650; 
-                        modulator.type = 'square'; modulator.frequency.value = 25; 
-                        modulator.connect(modGain); modGain.connect(gain.gain); 
-                        modGain.gain.value = 0.3; 
-                        osc.connect(gain); gain.connect(this.audioCtx.destination);
-                        gain.gain.setValueAtTime(0, startTime);
-                        gain.gain.linearRampToValueAtTime(0.15, startTime + 0.1); 
-                        gain.gain.exponentialRampToValueAtTime(0.001, startTime + 1.8); 
+                        const osc = this.audioCtx.createOscillator(); const gain = this.audioCtx.createGain(); const modulator = this.audioCtx.createOscillator(); const modGain = this.audioCtx.createGain();
+                        osc.type = 'triangle'; osc.frequency.value = 650; modulator.type = 'square'; modulator.frequency.value = 25; modulator.connect(modGain); modGain.connect(gain.gain); modGain.gain.value = 0.3; osc.connect(gain); gain.connect(this.audioCtx.destination);
+                        gain.gain.setValueAtTime(0, startTime); gain.gain.linearRampToValueAtTime(0.15, startTime + 0.1); gain.gain.exponentialRampToValueAtTime(0.001, startTime + 1.8); 
                         osc.start(startTime); modulator.start(startTime); osc.stop(startTime + 2.0); modulator.stop(startTime + 2.0);
                     };
                     const now = this.audioCtx.currentTime; createBell(now); createBell(now + 0.4); 
@@ -418,48 +345,46 @@
                     const node = this.script[this.currentNodeId]; 
                     if (node && node.listen === true && AppManager.recognition) { 
                         this.finalTranscript = ''; 
-                        setTimeout(() => { try { AppManager.recognition.continuous = false; AppManager.recognition.interimResults = true; AppManager.recognition.start(); } catch(e) { console.error("Rec start error", e); } }, 100);
+                        setTimeout(() => { try { AppManager.recognition.start(); } catch(e) { console.error("Rec start error", e); } }, 100);
                     } else if (node && node.listen === false && node.next) { 
                         setTimeout(() => this.transitionToNode(node.next), 500); 
                     } 
                 };
                 setTimeout(() => { if (AppManager.synth.speaking) { } else if (!AppManager.isListening && this.currentUtterance) { if(this.currentUtterance.onend) this.currentUtterance.onend(); } }, (text.length * 100) + 2000); 
                 if (this.selectedVoice) this.currentUtterance.voice = this.selectedVoice; 
-                this.currentUtterance.rate = this.handlerRate; 
-                this.currentUtterance.pitch = 1.05; 
+                this.currentUtterance.rate = this.handlerRate; this.currentUtterance.pitch = 1.05; 
                 AppManager.synth.speak(this.currentUtterance); 
             },
-            toggleListening: function() { if (!AppManager.recognition) return; if (AppManager.isListening) { AppManager.recognition.stop(); } else { if (AppManager.synth.speaking) AppManager.synth.cancel(); this.finalTranscript = ''; try { AppManager.recognition.continuous = false; AppManager.recognition.interimResults = true; AppManager.recognition.start(); } catch (error) {} } },
+            toggleListening: function() { if (!AppManager.recognition) return; if (AppManager.isListening) { AppManager.recognition.stop(); } else { if (AppManager.synth.speaking) AppManager.synth.cancel(); this.finalTranscript = ''; try { AppManager.recognition.start(); } catch (error) {} } },
             handleVoiceCommand: function(command) { 
-                // Capture address/phone if in those steps
                 if(this.currentNodeId === 'ambulance_address') this.capturedData['address'] = command;
                 if(this.currentNodeId === 'take_number') this.capturedData['phone'] = command;
-
-                const node = this.script[this.currentNodeId]; if (!node || command === "") return; 
+                const node = this.script[this.currentNodeId]; 
+                this.addMessage(`[Heard: "${command}"]`, 'system'); // Debug visual feedback
                 this.addMessage(command, 'user'); 
-                
                 let nextNodeId = null; 
                 const options = node.options || []; const keywords = node.keywords || {}; 
                 const matchedOption = options.find(opt => command.includes(opt.text.toLowerCase().replace(/[,.]/g, ''))); 
-                
-                if (matchedOption) nextNodeId = matchedOption.next; 
-                else { for (const keyword in keywords) { if (command.includes(keyword)) { nextNodeId = keywords[keyword]; break; } } } 
-                
+                if (matchedOption) nextNodeId = matchedOption.next; else { for (const keyword in keywords) { if (command.includes(keyword)) { nextNodeId = keywords[keyword]; break; } } } 
                 if (!nextNodeId && node.default) nextNodeId = node.default; 
-                
                 if (nextNodeId) {
                     setTimeout(() => this.transitionToNode(nextNodeId, command), 200);
-                } else if (AppManager.recognition) { 
-                    // Retry listening if logic requires it, but here we mainly rely on defaults
-                    this.finalTranscript = ''; 
-                    setTimeout(() => { try { AppManager.recognition.continuous = false; AppManager.recognition.interimResults = true; AppManager.recognition.start(); } catch(e){} }, 200);
-                } 
+                } else {
+                    // Retry logic if nothing matched
+                    this.retryCount++;
+                    if (this.retryCount < 3) {
+                       // Silent retry or prompt? Let's just restart listener for now
+                       setTimeout(() => { try { AppManager.recognition.start(); } catch(e){} }, 500);
+                    } else {
+                       this.addMessage("I'm having trouble hearing you. Please press the button to try again.", 'system');
+                       this.retryCount = 0;
+                    }
+                }
             },
             startCall: function() { 
                 this.ensureAudioContext(); 
                 this.callStatus.textContent = 'Dialing...'; this.dialingScreen.classList.add('hidden'); this.inCallScreen.classList.remove('hidden'); this.inCallScreen.classList.add('flex'); 
-                this.startCallBtn.classList.add('hidden'); 
-                this.endCallBtn.classList.remove('hidden');
+                this.startCallBtn.classList.add('hidden'); this.endCallBtn.classList.remove('hidden');
                 this.playSound('dial', () => { this.callStatus.textContent = 'Ringing...'; this.playSound('ring', () => { this.callStatus.textContent = 'Connecting...'; setTimeout(() => { this.startTimer(); this.showNode('start_call'); this.pttOverrideBtn.classList.remove('hidden'); this.pttOverrideBtn.disabled = false; }, 1000); }); }); },
             endCall: function() { this.endCallHandler(); },
             startTimer: function() { this.seconds = 0; this.callTimerDisplay.textContent = '00:00'; clearInterval(this.callTimer); this.callTimer = setInterval(() => { this.seconds++; const mins = String(Math.floor(this.seconds / 60)).padStart(2, '0'); const secs = String(this.seconds % 60).padStart(2, '0'); this.callTimerDisplay.textContent = `${mins}:${secs}`; }, 1000); },
@@ -469,11 +394,7 @@
                 clearTimeout(this.operatorTypingTimeout); this.removeTypingIndicator(); 
                 const messageDiv = document.createElement('div'); const wrapper = document.createElement('div'); 
                 if (sender.startsWith('system')) { messageDiv.className = 'w-full max-w-xs text-center p-2 rounded-lg bg-gray-100 text-gray-600 border border-gray-200 font-semibold text-sm'; messageDiv.textContent = text + (eta ? ` (ETA: ${eta})` : ''); wrapper.className = 'w-full flex justify-center'; } 
-                else { 
-                    messageDiv.className = `p-3 rounded-2xl max-w-xs shadow-sm text-sm ${sender === 'operator' ? 'bg-gray-700 text-white' : 'bg-blue-600 text-white text-right'}`; 
-                    messageDiv.textContent = text.charAt(0).toUpperCase() + text.slice(1); 
-                    wrapper.className = `w-full flex ${sender === 'operator' ? 'justify-start' : 'justify-end'}`; 
-                } 
+                else { messageDiv.className = `p-3 rounded-2xl max-w-xs shadow-sm text-sm ${sender === 'operator' ? 'bg-gray-700 text-white' : 'bg-blue-600 text-white text-right'}`; messageDiv.textContent = text.charAt(0).toUpperCase() + text.slice(1); wrapper.className = `w-full flex ${sender === 'operator' ? 'justify-start' : 'justify-end'}`; } 
                 wrapper.appendChild(messageDiv); this.conversationLog.appendChild(wrapper); this.conversationLog.scrollTop = this.conversationLog.scrollHeight; if (sender === 'operator') this.speakText(text); 
             },
             showNode: function(nodeId) { 
@@ -505,7 +426,7 @@
             setupInitialScreen: function() { 
                 this.callStatus.textContent = 'Ready to Call'; this.startCallBtn.disabled = false; this.endCallBtn.classList.add('hidden'); this.startCallBtn.classList.remove('hidden'); this.seconds = 0; this.callTimerDisplay.textContent = '00:00'; this.currentNodeId = 'start'; this.finalTranscript = ""; 
                 this.inCallScreen.classList.add('hidden'); this.inCallScreen.classList.remove('flex'); 
-                this.dialingScreen.classList.remove('hidden'); this.conversationLog.innerHTML = ''; this.userOptions.innerHTML = ''; this.pttOverrideBtn.classList.add('hidden'); this.pttOverrideBtn.disabled = true; this.capturedData = {}; 
+                this.dialingScreen.classList.remove('hidden'); this.conversationLog.innerHTML = ''; this.userOptions.innerHTML = ''; this.pttOverrideBtn.classList.add('hidden'); this.pttOverrideBtn.disabled = true; this.capturedData = {}; this.retryCount = 0;
             },
             checkBrowserSupport: function() { const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SpeechRec) { this.supportBanner.classList.remove('hidden'); this.micIcon.classList.add('text-gray-400'); } }
         };
